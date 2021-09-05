@@ -38,7 +38,7 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
  * 
  * Returns
  *    whereStr - a string which can be used to filter using WHERE in SQL and parameterized queries
- *         example: "num_employees>$1, num_employees<$2"
+ *         example: "WHERE num_employees>$1, num_employees<$2"
  *    values - an array of the data values to be substituted in for the parameters 
  *          example: [100, 300]]
  * 
@@ -73,7 +73,7 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   }
 
   return {
-    whereStr: criteriaStr.join(" AND "),
+    whereStr: "WHERE " + criteriaStr.join(" AND "),
     values
   };
 }

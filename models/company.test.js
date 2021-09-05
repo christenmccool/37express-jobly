@@ -59,7 +59,7 @@ describe("create", function () {
 /************************************** findAll */
 
 describe("findAll", function () {
-  test("works", async function () {
+  test("works with no filter", async function () {
     let companies = await Company.findAll();
     expect(companies).toEqual([
       {
@@ -85,13 +85,9 @@ describe("findAll", function () {
       },
     ]);
   });
-});
 
-/************************************** filterBy */
-
-describe("filterBy", function () {
-  test("works for minEmployees", async function () {
-    let companies = await Company.filterBy({minEmployees:"3"});
+  test("works for minEmployees filter", async function () {
+    let companies = await Company.findAll({minEmployees:"3"});
     expect(companies).toEqual([{
       handle: "c3",
       name: "C3",
@@ -101,8 +97,8 @@ describe("filterBy", function () {
     }]);
   });
 
-  test("works for maxEmployees", async function () {
-    let companies = await Company.filterBy({maxEmployees:"1"});
+  test("works for maxEmployees filter", async function () {
+    let companies = await Company.findAll({maxEmployees:"1"});
     expect(companies).toEqual([{
       handle: "c1",
       name: "C1",
@@ -112,8 +108,8 @@ describe("filterBy", function () {
     }]);
   });
 
-  test("works for name", async function () {
-    let companies = await Company.filterBy({name:"C"});
+  test("works for name filter", async function () {
+    let companies = await Company.findAll({name:"C"});
     expect(companies).toEqual([
       {
         handle: "c1",
@@ -139,17 +135,9 @@ describe("filterBy", function () {
     ]);
   });
 
-  // test("bad request with invalid criteria", async function () {
-  //   try {
-  //     let companies = await Company.filterBy({maxxxxEmployees:"1"});
-  //   } catch (err) {
-  //     expect(err instanceof BadRequestError).toBeTruthy();
-  //   }
-  // });
-
   test("bad request with minEmployees > maxEmployees", async function () {
     try {
-      let companies = await Company.filterBy({minEmployees:"3", maxEmployees:"3"});
+      let companies = await Company.findAll({minEmployees:"3", maxEmployees:"3"});
     } catch (err) {
       expect(err instanceof BadRequestError).toBeTruthy();
     }

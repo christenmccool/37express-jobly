@@ -75,7 +75,7 @@ describe("POST /companies", function () {
 /************************************** GET /companies */
 
 describe("GET /companies", function () {
-  test("ok for anon", async function () {
+  test("works for anon without filter", async function () {
     const resp = await request(app).get("/companies");
     expect(resp.body).toEqual({
       companies:
@@ -102,7 +102,97 @@ describe("GET /companies", function () {
               logoUrl: "http://c3.img",
             },
           ],
+      });
     });
+
+  test("works with partial matching name filter", async function () {
+    const resp = await request(app).get("/companies?name=c");
+    expect(resp.body).toEqual({
+      companies:
+        [
+          {
+            handle: "c1",
+            name: "C1",
+            description: "Desc1",
+            numEmployees: 1,
+            logoUrl: "http://c1.img",
+          },
+          {
+            handle: "c2",
+            name: "C2",
+            description: "Desc2",
+            numEmployees: 2,
+            logoUrl: "http://c2.img",
+          },
+          {
+            handle: "c3",
+            name: "C3",
+            description: "Desc3",
+            numEmployees: 3,
+            logoUrl: "http://c3.img",
+          },
+        ],
+      });
+    });
+
+  test("works with exact match name filter", async function () {
+    const resp = await request(app).get("/companies?name=c1");
+    expect(resp.body).toEqual({
+      companies:
+        [
+          {
+            handle: "c1",
+            name: "C1",
+            description: "Desc1",
+            numEmployees: 1,
+            logoUrl: "http://c1.img",
+          },
+        ],
+    });
+  });
+
+  test("works with minEmployees ", async function () {
+    const resp = await request(app).get("/companies?minEmployees=2");
+    expect(resp.body).toEqual({
+      companies:
+        [
+          {
+            handle: "c2",
+            name: "C2",
+            description: "Desc2",
+            numEmployees: 2,
+            logoUrl: "http://c2.img",
+          },
+          {
+            handle: "c3",
+            name: "C3",
+            description: "Desc3",
+            numEmployees: 3,
+            logoUrl: "http://c3.img",
+          },
+        ],
+      });
+  });
+
+  test("works with maxEmployees ", async function () {
+    const resp = await request(app).get("/companies?maxEmployees=1");
+    expect(resp.body).toEqual({
+      companies:
+        [
+          {
+            handle: "c1",
+            name: "C1",
+            description: "Desc1",
+            numEmployees: 1,
+            logoUrl: "http://c1.img",
+          },
+        ],
+      });
+  });
+
+  test("bad request on invalid data", async function () {
+    const resp = await request(app).get(`/companies?other=something`);
+    expect(resp.statusCode).toEqual(400);
   });
 
   test("fails: test next() handler", async function () {

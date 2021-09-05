@@ -53,19 +53,13 @@ router.post("/", ensureAdmin, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   try {
-
     const validator = jsonschema.validate(req.query, companyFilterSchema);
     if (!validator.valid) {
       const errs = validator.errors.map(e => e.stack);
       throw new BadRequestError(errs);
     }
+    const companies = await Company.findAll(req.query);
 
-    let companies;
-    if (Object.keys(req.query).length > 0) {
-      companies = await Company.filterBy(req.query);
-    } else {
-      companies = await Company.findAll();
-    }
     return res.json({ companies });
   } catch (err) {
     return next(err);

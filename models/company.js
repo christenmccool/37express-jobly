@@ -44,24 +44,7 @@ class Company {
     return company;
   }
 
-  /** Find all companies.
-   *
-   * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
-   * */
-
-  static async findAll() {
-    const companiesRes = await db.query(
-          `SELECT handle,
-                  name,
-                  description,
-                  num_employees AS "numEmployees",
-                  logo_url AS "logoUrl"
-           FROM companies
-           ORDER BY name`);
-    return companiesRes.rows;
-  }
-
-  /** Given a filtering criteria, returns an array of companies.
+  /** Find all companies with an optional filtering criteria.
    * 
    * Valid filtering fields: name, minEmployees, maxEmployees
    *
@@ -71,20 +54,21 @@ class Company {
    * Ignores minEmployees and maxEmployees filters if minEmployees > maxEmployees
    * Throws NotFoundError if not found.
    **/
-   static async filterBy(criteria) {
-    let filters = Object.keys(criteria);
-    const validFilters = ['name', 'minEmployees', 'maxEmployees'];
 
-    // const invalidFilters = filters.filter(ele => !validFilters.includes(ele));
-    // if (invalidFilters.length !== 0) {
-    //   throw new BadRequestError(`Invalid filter: ${invalidFilters}`);
-    // }
+  static async findAll(criteria = {}) {
+    let filters = Object.keys(criteria);
 
     if (filters.includes('minEmployees') && filters.includes('maxEmployees') && +criteria.minEmployees > +criteria.maxEmployees) {
       throw new BadRequestError(`minEmployees cannot be greater than maxEmployees`);
     }
 
-    const {whereStr, values} = sqlForFilter(criteria);
+    let whereStr = "";
+    let values = [];
+
+    if (Object.keys(criteria).length > 0) {
+      ({whereStr, values} = sqlForFilter(criteria));
+    }
+
     const companiesRes = await db.query(
           `SELECT handle,
                   name,
@@ -92,7 +76,7 @@ class Company {
                   num_employees AS "numEmployees",
                   logo_url AS "logoUrl"
            FROM companies
-           WHERE ${whereStr}
+           ${whereStr}
            ORDER BY name`,
            values);
 
