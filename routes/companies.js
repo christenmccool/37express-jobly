@@ -53,6 +53,14 @@ router.post("/", ensureAdmin, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   try {
+    console.log(req.query);
+    if (req.query.minEmployees) {
+      req.query.minEmployees = +req.query.minEmployees;
+    }
+    if (req.query.maxEmployees) {
+      req.query.maxEmployees = +req.query.maxEmployees;
+    }
+    
     const validator = jsonschema.validate(req.query, companyFilterSchema);
     if (!validator.valid) {
       const errs = validator.errors.map(e => e.stack);
