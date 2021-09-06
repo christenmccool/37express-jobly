@@ -53,20 +53,17 @@ router.post("/", ensureAdmin, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   try {
+    if (req.query.minSalary) {
+      req.query.minSalary = +req.query.minSalary;
+    }
+    
+    const validator = jsonschema.validate(req.query, jobFilterSchema);
+    if (!validator.valid) {
+      const errs = validator.errors.map(e => e.stack);
+      throw new BadRequestError(errs);
+    }
+    const jobs = await Job.findAll(req.query);
 
-    // const validator = jsonschema.validate(req.query, companyFilterSchema);
-    // if (!validator.valid) {
-    //   const errs = validator.errors.map(e => e.stack);
-    //   throw new BadRequestError(errs);
-    // }
-    const jobs = await Job.findAll();
-
-    // let companies;
-    // if (Object.keys(req.query).length > 0) {
-    //   companies = await Company.filterBy(req.query);
-    // } else {
-    //   companies = await Company.findAll();
-    // }
     return res.json({ jobs });
   } catch (err) {
     return next(err);

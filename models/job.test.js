@@ -56,7 +56,7 @@ describe("create", function () {
 /************************************** findAll */
 
 describe("findAll", function () {
-  test("works", async function () {
+  test("works for no filter", async function () {
     let jobs = await Job.findAll();
 
     expect(jobs).toEqual([
@@ -75,6 +75,114 @@ describe("findAll", function () {
         companyHandle: 'c1',
       },
       {
+        id: expect.any(Number),
+        title: 'Job 3',
+        salary: 3000,
+        equity: '0',
+        companyHandle: 'c2',
+      }
+    ]);
+  });
+
+  test("works for minSalaray filter", async function () {
+    let jobs = await Job.findAll({minSalary:"2000"});
+    expect(jobs).toEqual([
+      {
+        id: expect.any(Number),
+        title: 'Job 2',
+        salary: 2000,
+        equity: '0.2',
+        companyHandle: 'c1',
+      },
+      {
+        id: expect.any(Number),
+        title: 'Job 3',
+        salary: 3000,
+        equity: '0',
+        companyHandle: 'c2',
+      },
+  ]);
+  });
+
+  test("works for partial matching title filter", async function () {
+    let jobs = await Job.findAll({title:"Job"});
+    expect(jobs).toEqual([
+      {
+        id: expect.any(Number),
+        title: 'Job 1',
+        salary: 1000,
+        equity: '0.1',
+        companyHandle: 'c1',
+      },
+      {
+        id: expect.any(Number),
+        title: 'Job 2',
+        salary: 2000,
+        equity: '0.2',
+        companyHandle: 'c1',
+      },
+      {  
+        id: expect.any(Number),
+        title: 'Job 3',
+        salary: 3000,
+        equity: '0',
+        companyHandle: 'c2',
+      }
+    ]);
+  });
+
+  test("works for full match title filter", async function () {
+    let jobs = await Job.findAll({title:"Job 1"});
+    expect(jobs).toEqual([
+      {
+        id: expect.any(Number),
+        title: 'Job 1',
+        salary: 1000,
+        equity: '0.1',
+        companyHandle: 'c1',
+      },
+    ]);
+  });
+
+  test("works for hasEquity true", async function () {
+    let jobs = await Job.findAll({hasEquity:"true"});
+    expect(jobs).toEqual([
+      {
+        id: expect.any(Number),
+        title: 'Job 1',
+        salary: 1000,
+        equity: '0.1',
+        companyHandle: 'c1',
+      },
+      {
+        id: expect.any(Number),
+        title: 'Job 2',
+        salary: 2000,
+        equity: '0.2',
+        companyHandle: 'c1',
+      },
+
+    ]);
+  });
+
+  test("works for hasEquity false", async function () {
+    let jobs = await Job.findAll({hasEquity:"false"});
+    expect(jobs).toEqual([
+      {
+        id: expect.any(Number),
+        title: 'Job 1',
+        salary: 1000,
+        equity: '0.1',
+        companyHandle: 'c1',
+      },
+      {
+        id: expect.any(Number),
+        title: 'Job 2',
+        salary: 2000,
+        equity: '0.2',
+        companyHandle: 'c1',
+      },
+      {  
         id: expect.any(Number),
         title: 'Job 3',
         salary: 3000,

@@ -74,8 +74,130 @@ describe("POST /jobs", function () {
 /************************************** GET /jobs */
 
 describe("GET /jobs", function () {
-  test("ok for anon", async function () {
+  test("works for anon without filter", async function () {
     const resp = await request(app).get("/jobs");
+    expect(resp.body).toEqual({
+      jobs:
+        [
+          {
+            id: expect.any(Number),
+            title: "Job 1",
+            salary: 1000,
+            equity: "0.1",
+            companyHandle: "c1",
+          },
+          {
+            id: expect.any(Number),
+            title: "Job 2",
+            salary: 2000,
+            equity: "0.2",
+            companyHandle: "c1",
+          },
+          {
+            id: expect.any(Number),
+            title: "Job 3",
+            salary: 3000,
+            equity: "0",
+            companyHandle: "c2",
+          }
+        ]
+    });
+  });
+
+  test("works with minSalary filter", async function () {
+    const resp = await request(app).get("/jobs?minSalary=2000");
+    expect(resp.body).toEqual({
+      jobs:
+        [
+          {
+            id: expect.any(Number),
+            title: "Job 2",
+            salary: 2000,
+            equity: "0.2",
+            companyHandle: "c1",
+          },
+          {
+            id: expect.any(Number),
+            title: "Job 3",
+            salary: 3000,
+            equity: "0",
+            companyHandle: "c2",
+          }
+        ]
+    });
+  });
+
+  test("works with partial matching title filter", async function () {
+    const resp = await request(app).get("/jobs?title=Job");
+    expect(resp.body).toEqual({
+      jobs:
+        [
+          {
+            id: expect.any(Number),
+            title: "Job 1",
+            salary: 1000,
+            equity: "0.1",
+            companyHandle: "c1",
+          },
+          {
+            id: expect.any(Number),
+            title: "Job 2",
+            salary: 2000,
+            equity: "0.2",
+            companyHandle: "c1",
+          },
+          {
+            id: expect.any(Number),
+            title: "Job 3",
+            salary: 3000,
+            equity: "0",
+            companyHandle: "c2",
+          }
+        ]
+    });
+  });
+
+  test("works with exact match title filter", async function () {
+    const resp = await request(app).get("/jobs?title=Job 1");
+    expect(resp.body).toEqual({
+      jobs:
+        [
+          {
+            id: expect.any(Number),
+            title: "Job 1",
+            salary: 1000,
+            equity: "0.1",
+            companyHandle: "c1",
+          },
+        ]
+    });
+  });
+
+  test("works for hasEquity filter is true", async function () {
+    const resp = await request(app).get("/jobs?hasEquity=true");
+    expect(resp.body).toEqual({
+      jobs:
+        [
+          {
+            id: expect.any(Number),
+            title: "Job 1",
+            salary: 1000,
+            equity: "0.1",
+            companyHandle: "c1",
+          },
+          {
+            id: expect.any(Number),
+            title: "Job 2",
+            salary: 2000,
+            equity: "0.2",
+            companyHandle: "c1",
+          },
+        ]
+    });
+  });
+
+  test("works for hasEquity filter is false", async function () {
+    const resp = await request(app).get("/jobs?hasEquity=false");
     expect(resp.body).toEqual({
       jobs:
         [

@@ -53,7 +53,6 @@ router.post("/", ensureAdmin, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   try {
-    console.log(req.query);
     if (req.query.minEmployees) {
       req.query.minEmployees = +req.query.minEmployees;
     }
