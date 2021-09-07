@@ -77,6 +77,7 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
     idx++;
     values.push(`%${criteria.title}%`);
   }
+  
   if (criteria.minSalary) {
     criteriaStr.push(`salary>=$${idx} AND salary IS NOT NULL`);
     idx++;

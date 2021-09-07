@@ -67,6 +67,10 @@ class Company {
 
     if (Object.keys(criteria).length > 0) {
       ({whereStr, values} = sqlForFilter(criteria));
+
+      if (whereStr) {
+        whereStr = "WHERE " + whereStr;
+      }
     }
 
     const companiesRes = await db.query(
@@ -106,6 +110,16 @@ class Company {
     const company = companyRes.rows[0];
 
     if (!company) throw new NotFoundError(`No company: ${handle}`);
+
+    const jobsRes = await db.query(
+      `SELECT id,
+              title,
+              salary,
+              equity
+       FROM jobs
+       WHERE company_handle = '${handle}'`);
+    
+    company.jobs = jobsRes.rows;
 
     return company;
   }
