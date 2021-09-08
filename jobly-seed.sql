@@ -368,3 +368,6 @@ VALUES ('Conservator, furniture', 110000, 0, 'watson-davis'),
        ('Learning disability nurse', 66000, NULL, 'ayala-buchanan'),
        ('Research scientist (medical)', 175000, NULL, 'norman-harvey'),
        ('Accommodation manager', 126000, NULL, 'mejia-scott-ryan');
+
+INSERT INTO technologies (technology)
+        VALUES ('Python'), ('Javascript'), ('HTML'), ('CSS');

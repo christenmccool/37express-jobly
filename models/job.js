@@ -96,6 +96,15 @@ class Job {
 
     if (!job) throw new NotFoundError(`No job: ${id}`);
 
+    const techRes = await db.query(
+      `SELECT technology
+              FROM technologies
+              JOIN requirements ON requirements.tech_id=technologies.id
+              WHERE requirements.job_id=$1`,
+      [id]);
+
+    job.technologies = techRes.rows.map(ele => ele.technology);
+
     return job;
   }
 
@@ -147,6 +156,48 @@ class Job {
     const job = result.rows[0];
 
     if (!job) throw new NotFoundError(`No job: ${id}`);
+  }
+
+
+  /** Adds the requirement for a technology to a job
+  * 
+  * Returns { jobId, techId }
+  * 
+  * Throws BadRequestError on duplicates.
+  * Throws NotFoundError if company not found.
+  **/
+
+  static async require(id, techId) {
+    const duplicateCheck = await db.query(
+      `SELECT job_id, tech_id
+        FROM requirements
+        WHERE job_id = $1 AND tech_id = $2`,
+      [id, techId],
+    );
+
+    if (duplicateCheck.rows[0]) {
+      throw new BadRequestError(`Duplicate requirement for job ${id} and technology ${techId}`);
+    }
+
+    try {
+      const result = await db.query(
+        `INSERT INTO requirements
+          (job_id, tech_id)
+          VALUES ($1, $2)
+          RETURNING job_id AS "jobId", tech_id AS "techId"`,
+        [
+          id,
+          techId
+        ],
+      );
+      const requirement = result.rows[0];
+
+      return requirement;
+    }
+    catch {
+      throw new NotFoundError(`No job ${id} or no technology ${techId} `);
+    }
+
   }
 }
 

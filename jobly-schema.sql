@@ -32,3 +32,17 @@ CREATE TABLE applications (
     REFERENCES jobs ON DELETE CASCADE,
   PRIMARY KEY (username, job_id)
 );
+
+CREATE TABLE technologies (
+  id SERIAL PRIMARY KEY,
+  technology VARCHAR(25)
+);
+
+CREATE TABLE requirements (
+  tech_id INTEGER
+    REFERENCES technologies ON DELETE CASCADE,
+  job_id INTEGER
+    REFERENCES jobs ON DELETE CASCADE,
+  PRIMARY KEY (tech_id, job_id)
+);
+

@@ -214,13 +214,13 @@ class User {
   }
 
   /** Allow a given user to apply for a job given the job's id. 
- * 
- * Returns { username, jobId }
- * 
- * Throws BadRequestError on duplicates.
- * 
- * Throws NotFoundError if user or job not found.
- */
+   * 
+   * Returns { username, jobId }
+   * 
+   * Throws BadRequestError on duplicates.
+   * 
+   * Throws NotFoundError if user or job not found.
+   */
 
   static async apply(username, jobId) {
     const duplicateCheck = await db.query(
@@ -231,7 +231,7 @@ class User {
       );
   
       if (duplicateCheck.rows[0]) {
-        throw new BadRequestError(`Duplicate username ${username} or job ${jobId}`);
+        throw new BadRequestError(`Duplicate application for username ${username} and job ${jobId}`);
       }
   
     try {

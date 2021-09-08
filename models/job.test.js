@@ -8,6 +8,8 @@ const {
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
+  jobIds,
+  techIds
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -213,6 +215,7 @@ describe("get", function () {
         salary: 1000,
         equity: '0.1',
         companyHandle: 'c1',
+        technologies: ['Tech1', 'Tech2']
       }
     );
   });
@@ -348,6 +351,7 @@ describe("remove", function () {
 
     const res = await db.query(
       `SELECT id FROM jobs WHERE id=${job1Id}`);
+
     expect(res.rows.length).toEqual(0);
   });
   
@@ -361,5 +365,54 @@ describe("remove", function () {
   });
 
 });
+
+
+/************************************** require */
+
+describe("require", function () {
+  test("works", async function () {
+    const results = await db.query(
+      `SELECT id
+        FROM jobs
+        WHERE title = 'Job 2'`
+    );
+    const job2Id = results.rows[0].id;
+    const requireement = await Job.require(job2Id, techIds[0]);
+
+    expect(requireement).toEqual({
+      jobId: job2Id,
+      techId: techIds[0]
+    });
+  });
+
+  test("bad request with dup data", async function () {
+    try {
+      await Job.require(jobIds[1], techIds[0]);
+      await Job.require(jobIds[1], techIds[0]);
+    }
+    catch (err) {
+      expect(err instanceof BadRequestError).toBeTruthy();
+    }
+  });
+
+  test("not found if no such job", async function () {
+    try {
+      await Job.require(0, techIds[0]);
+    }
+    catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+
+  test("not found if no such technology", async function () {
+    try {
+      await Job.require(jobIds[1], 0);
+    }
+    catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+});
+
 
 

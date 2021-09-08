@@ -2,7 +2,8 @@ const bcrypt = require("bcrypt");
 
 const db = require("../db.js");
 const { BCRYPT_WORK_FACTOR } = require("../config");
-// let jobIds = [];
+let jobIds = [];
+let techIds = [];
 
 async function commonBeforeAll() {
   // noinspection SqlWithoutWhere
@@ -17,13 +18,6 @@ async function commonBeforeAll() {
     VALUES ('c1', 'C1', 1, 'Desc1', 'http://c1.img'),
            ('c2', 'C2', 2, 'Desc2', 'http://c2.img'),
            ('c3', 'C3', 3, 'Desc3', 'http://c3.img')`);
-
-
-  // const job1Id =await db.query(`
-  //   INSERT INTO jobs(title, salary, equity, company_handle)
-  //   VALUES ('Job 1', 1000, '0.1', 'c1'),
-  //          ('Job 2', 2000, '0.2', 'c1'),
-  //          ('Job 3', 3000, '0', 'c2')`);
   
   const jobRes = await db.query(`
       INSERT INTO jobs(title, salary, equity, company_handle)
@@ -32,8 +26,9 @@ async function commonBeforeAll() {
              ('Job 3', 3000, '0', 'c2')
       RETURNING id`);
   
-  jobIds = jobRes.rows.map(ele => ele.id);
-  // jobIds.splice(0, 0, ...jobRes.rows.map(ele => ele.id));
+  jobIds[0] = jobRes.rows[0].id;
+  jobIds[1] = jobRes.rows[1].id;
+  jobIds[2] = jobRes.rows[2].id;
 
   await db.query(`
         INSERT INTO users(username,
@@ -48,12 +43,25 @@ async function commonBeforeAll() {
         await bcrypt.hash("password1", BCRYPT_WORK_FACTOR),
         await bcrypt.hash("password2", BCRYPT_WORK_FACTOR),
       ]);
+      
+  await db.query(`
+      INSERT INTO applications (username, job_id)
+      VALUES ('u1', ${jobIds[1]}),
+            ('u1', ${jobIds[2]})`);
 
+
+  const techRes = await db.query(`
+        INSERT INTO technologies (technology)
+        VALUES ('Tech1'), ('Tech2')
+        RETURNING id`);
+
+  techIds[0] = techRes.rows[0].id;
+  techIds[1] = techRes.rows[1].id;
 
   await db.query(`
-        INSERT INTO applications (username, job_id)
-        VALUES ('u1', ${jobIds[1]}),
-              ('u1', ${jobIds[2]})`);
+        INSERT INTO requirements (job_id, tech_id)
+        VALUES (${jobIds[0]}, ${techIds[0]}),
+               (${jobIds[0]}, ${techIds[1]})`);
 }
 
 async function commonBeforeEach() {
@@ -75,5 +83,6 @@ module.exports = {
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
-  // jobIds
+  jobIds,
+  techIds
 };
