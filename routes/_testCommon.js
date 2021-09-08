@@ -64,24 +64,32 @@ async function commonBeforeAll() {
     isAdmin: false,
   });
 
-  await Job.create({
+  const job1Res = await Job.create({
     title: "Job 1",
     salary: 1000,
     equity: "0.1",
     companyHandle: "c1",
   });
-  await Job.create({
+  const job1Id = job1Res.id;
+
+  const job2Res = await Job.create({
     title: "Job 2",
     salary: 2000,
     equity: "0.2",
     companyHandle: "c1",
   });
-  await Job.create({
+  const job2Id = job2Res.id;
+
+  const job3Res = await Job.create({
     title: "Job 3",
     salary: 3000,
     equity: "0",
     companyHandle: "c2",
   });
+  const job3Id = job3Res.id;
+
+  await User.apply("u2", job1Id);
+  await User.apply("u2", job2Id);
 }
 
 async function commonBeforeEach() {

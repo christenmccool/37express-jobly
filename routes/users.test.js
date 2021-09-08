@@ -5,6 +5,8 @@ const request = require("supertest");
 const db = require("../db.js");
 const app = require("../app");
 const User = require("../models/user");
+const Job = require("../models/job");
+
 
 const {
   commonBeforeAll,
@@ -189,6 +191,10 @@ describe("GET /users", function () {
 
 describe("GET /users/:username", function () {
   test("works for admin", async function () {
+    const allJobsResp = await request(app).get(`/jobs`);
+    const job1Id = allJobsResp.body.jobs.filter(ele => ele.title === 'Job 1')[0].id;
+    const job2Id = allJobsResp.body.jobs.filter(ele => ele.title === 'Job 2')[0].id;
+
     const resp = await request(app)
         .get(`/users/u2`)
         .set("authorization", `Bearer ${u1Token}`);
@@ -199,11 +205,16 @@ describe("GET /users/:username", function () {
         lastName: "U2L",
         email: "user2@user.com",
         isAdmin: false,
+        jobs: [job1Id, job2Id]
       },
     });
   });
 
   test("works for self", async function () {
+    const allJobsResp = await request(app).get(`/jobs`);
+    const job1Id = allJobsResp.body.jobs.filter(ele => ele.title === 'Job 1')[0].id;
+    const job2Id = allJobsResp.body.jobs.filter(ele => ele.title === 'Job 2')[0].id;
+
     const resp = await request(app)
         .get(`/users/u2`)
         .set("authorization", `Bearer ${u2Token}`);
@@ -214,6 +225,7 @@ describe("GET /users/:username", function () {
         lastName: "U2L",
         email: "user2@user.com",
         isAdmin: false,
+        jobs: [job1Id, job2Id]
       },
     });
   });
