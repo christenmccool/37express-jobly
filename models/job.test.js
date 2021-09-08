@@ -163,7 +163,6 @@ describe("findAll", function () {
         equity: '0.2',
         companyHandle: 'c1',
       },
-
     ]);
   });
 
@@ -201,16 +200,11 @@ describe("findAll", function () {
 describe("get", function () {
   test("works", async function () {
 
-    const results = await db.query(
-      `SELECT id
-        FROM jobs
-        WHERE title = 'Job 1'`);
-    const job1Id = results.rows[0].id;
+    let job = await Job.get(jobIds[0]);
 
-    let job = await Job.get(job1Id);
     expect(job).toEqual(
       {
-        id: job1Id,
+        id: jobIds[0],
         title: 'Job 1',
         salary: 1000,
         equity: '0.1',
@@ -241,17 +235,10 @@ describe("update", function () {
 
   test("works", async function () {
 
-    const results = await db.query(
-      `SELECT id
-        FROM jobs
-        WHERE title = 'Job 1'`
-    );
-    const job1Id = results.rows[0].id;
-
-    let job = await Job.update(job1Id, updateData);
+    let job = await Job.update(jobIds[0], updateData);
     expect(job).toEqual(
       {
-        id: job1Id,
+        id: jobIds[0],
         ...updateData,
         companyHandle: 'c1'
       }
@@ -265,7 +252,7 @@ describe("update", function () {
 
     expect(result.rows).toContainEqual(
       {
-        id: job1Id,
+        id: jobIds[0],
         ...updateData,
         companyHandle: 'c1'
       }
@@ -279,17 +266,10 @@ describe("update", function () {
       equity: null,
     };
 
-    const results = await db.query(
-      `SELECT id
-        FROM jobs
-        WHERE title = 'Job 1'`
-    );
-    const job1Id = results.rows[0].id;
-
-    let job = await Job.update(job1Id, updateDataSetNulls);
+    let job = await Job.update(jobIds[0], updateDataSetNulls);
     expect(job).toEqual(
       {
-        id: job1Id,
+        id: jobIds[0],
         ...updateDataSetNulls,
         companyHandle: 'c1'
       }
@@ -302,7 +282,7 @@ describe("update", function () {
 
     expect(result.rows).toContainEqual(
       {
-        id: job1Id,
+        id: jobIds[0],
         ...updateDataSetNulls,
         companyHandle: 'c1'
       }
@@ -340,17 +320,11 @@ describe("update", function () {
 
 describe("remove", function () {
   test("works", async function () {
-    const results = await db.query(
-      `SELECT id
-        FROM jobs
-        WHERE title = 'Job 1'`
-    );
-    const job1Id = results.rows[0].id;
 
-    await Job.remove(job1Id);
+    await Job.remove(jobIds[0]);
 
     const res = await db.query(
-      `SELECT id FROM jobs WHERE id=${job1Id}`);
+      `SELECT id FROM jobs WHERE id=${jobIds[0]}`);
 
     expect(res.rows.length).toEqual(0);
   });
@@ -371,18 +345,21 @@ describe("remove", function () {
 
 describe("require", function () {
   test("works", async function () {
-    const results = await db.query(
-      `SELECT id
-        FROM jobs
-        WHERE title = 'Job 2'`
-    );
-    const job2Id = results.rows[0].id;
-    const requireement = await Job.require(job2Id, techIds[0]);
+    const requirement = await Job.require(jobIds[1], techIds[0]);
 
-    expect(requireement).toEqual({
-      jobId: job2Id,
+    expect(requirement).toEqual({
+      jobId: jobIds[1],
       techId: techIds[0]
     });
+
+    const found = await db.query(
+      `SELECT * FROM requirements
+      WHERE job_id=${jobIds[1]}`
+    )
+    expect(found.rows.length).toEqual(1);
+    expect(found.rows[0].job_id).toEqual(jobIds[1]);
+    expect(found.rows[0].tech_id).toEqual(techIds[0]);
+
   });
 
   test("bad request with dup data", async function () {

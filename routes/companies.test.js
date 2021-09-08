@@ -11,7 +11,8 @@ const {
   commonAfterEach,
   commonAfterAll,
   u1Token,
-  u2Token
+  u2Token,
+  jobIds
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -221,13 +222,13 @@ describe("GET /companies/:handle", function () {
         logoUrl: "http://c1.img",
         jobs: [
           {
-            id: expect.any(Number),
+            id: jobIds[0],
             title: "Job 1",
             equity: "0.1",
             salary: 1000
           },
           {
-            id: expect.any(Number),
+            id: jobIds[1],
             title: "Job 2",
             equity: "0.2",
             salary: 2000

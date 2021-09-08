@@ -14,7 +14,7 @@ const {
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
-  // jobIds
+  jobIds
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -136,19 +136,6 @@ describe("findAll", function () {
 
 describe("get", function () {
   test("works", async function () {
-    const job2Res = await db.query(
-      `SELECT id
-        FROM jobs
-        WHERE title = 'Job 2'`
-    );
-    const job2Id = job2Res.rows[0].id;
-
-    const job3Res = await db.query(
-      `SELECT id
-        FROM jobs
-        WHERE title = 'Job 3'`
-    );
-    const job3Id = job3Res.rows[0].id;
 
     let user = await User.get("u1");
     expect(user).toEqual({
@@ -157,7 +144,7 @@ describe("get", function () {
       lastName: "U1L",
       email: "u1@email.com",
       isAdmin: false,
-      jobs: [job2Id, job3Id]
+      jobs: [jobIds[1], jobIds[2]]
     });
   });
 
@@ -252,38 +239,25 @@ describe("remove", function () {
 describe("apply", function () {
 
   test("works", async function () {
-    const results = await db.query(
-      `SELECT id
-        FROM jobs
-        WHERE title = 'Job 1'`
-    );
-    const job1Id = results.rows[0].id;
 
-    let application = await User.apply("u1", job1Id);
+    let application = await User.apply("u1", jobIds[0]);
 
     expect(application).toEqual({
       username: "u1",
-      jobId: job1Id,
+      jobId: jobIds[0],
     });
 
-    const found = await db.query(`SELECT * FROM applications WHERE username = 'u1' AND job_id=${job1Id}`);
+    const found = await db.query(`SELECT * FROM applications WHERE username = 'u1' AND job_id=${jobIds[0]}`);
     expect(found.rows.length).toEqual(1);
     expect(found.rows[0].username).toEqual("u1");
-    expect(found.rows[0].job_id).toEqual(job1Id);
+    expect(found.rows[0].job_id).toEqual(jobIds[0]);
   });
 
 
   test("bad request with dup data", async function () {
     try {
-      const results = await db.query(
-        `SELECT id
-          FROM jobs
-          WHERE title = 'Job 1'`
-      );
-      const job1Id = results.rows[0].id;
-  
-      await User.apply("u1", job1Id);
-      await User.apply("u1", job1Id);
+      await User.apply("u1", jobIds[0]);
+      await User.apply("u1", jobIds[0]);
       fail();
     } catch (err) {
       expect(err instanceof BadRequestError).toBeTruthy();
@@ -292,14 +266,7 @@ describe("apply", function () {
 
   test("not found if no such user", async function () {
     try {
-      const results = await db.query(
-        `SELECT id
-          FROM jobs
-          WHERE title = 'Job 1'`
-      );
-      const job1Id = results.rows[0].id;
-  
-      let application = await User.apply("nope", job1Id);
+      let application = await User.apply("nope", jobIds[0]);
       fail();
     } catch (err) {
       expect(err instanceof NotFoundError).toBeTruthy();

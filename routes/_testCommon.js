@@ -6,6 +6,9 @@ const Company = require("../models/company");
 const Job = require("../models/job");
 const { createToken } = require("../helpers/tokens");
 
+const jobIds = [];
+const techIds = [];
+
 async function commonBeforeAll() {
   // noinspection SqlWithoutWhere
   await db.query("DELETE FROM users");
@@ -70,7 +73,7 @@ async function commonBeforeAll() {
     equity: "0.1",
     companyHandle: "c1",
   });
-  const job1Id = job1Res.id;
+  jobIds[0] = job1Res.id;
 
   const job2Res = await Job.create({
     title: "Job 2",
@@ -78,7 +81,7 @@ async function commonBeforeAll() {
     equity: "0.2",
     companyHandle: "c1",
   });
-  const job2Id = job2Res.id;
+  jobIds[1]= job2Res.id;
 
   const job3Res = await Job.create({
     title: "Job 3",
@@ -86,10 +89,22 @@ async function commonBeforeAll() {
     equity: "0",
     companyHandle: "c2",
   });
-  const job3Id = job3Res.id;
+  jobIds[2] = job3Res.id;
 
-  await User.apply("u2", job1Id);
-  await User.apply("u2", job2Id);
+  await User.apply("u2", jobIds[0]);
+  await User.apply("u2", jobIds[1]);
+
+  const techRes = await db.query(`
+        INSERT INTO technologies (technology)
+        VALUES ('Tech1'), ('Tech2')
+        RETURNING id`);
+
+  techIds[0] = techRes.rows[0].id;
+  techIds[1] = techRes.rows[1].id;
+
+  await Job.require(jobIds[0], techIds[0]);
+  await Job.require(jobIds[0], techIds[1]);
+
 }
 
 async function commonBeforeEach() {
@@ -115,5 +130,7 @@ module.exports = {
   commonAfterEach,
   commonAfterAll,
   u1Token,
-  u2Token
+  u2Token,
+  jobIds,
+  techIds
 };
