@@ -386,7 +386,7 @@ describe("DELETE /users/:username", function () {
   });
 });
 
-/************************************** POST /users/[username]/jobs/[id] */
+/************************************** POST /users/:username/jobs/:id */
 
 describe("POST /users/:username/jobs/:id", function () {
   test("works for admin", async function () {

@@ -13,6 +13,9 @@ async function commonBeforeAll() {
 
   await db.query("DELETE FROM jobs");
 
+  await db.query("DELETE FROM technologies");
+
+
   await db.query(`
     INSERT INTO companies(handle, name, num_employees, description, logo_url)
     VALUES ('c1', 'C1', 1, 'Desc1', 'http://c1.img'),

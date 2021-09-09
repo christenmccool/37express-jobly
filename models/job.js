@@ -97,13 +97,14 @@ class Job {
     if (!job) throw new NotFoundError(`No job: ${id}`);
 
     const techRes = await db.query(
-      `SELECT technology
+      `SELECT id, technology
               FROM technologies
               JOIN requirements ON requirements.tech_id=technologies.id
               WHERE requirements.job_id=$1`,
       [id]);
 
-    job.technologies = techRes.rows.map(ele => ele.technology);
+    // job.requirements = techRes.rows.map(ele => ele.id);
+    job.requirements = techRes.rows;
 
     return job;
   }

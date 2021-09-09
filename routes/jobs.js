@@ -77,54 +77,75 @@ router.get("/", async function (req, res, next) {
  * Authorization required: none
  */
 
- router.get("/:id", async function (req, res, next) {
-    try {
-      const job = await Job.get(req.params.id);
-      return res.json({ job });
-    } catch (err) {
-      return next(err);
+router.get("/:id", async function (req, res, next) {
+  try {
+    const job = await Job.get(req.params.id);
+    return res.json({ job });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+/** PATCH /[id] { fld1, fld2, ... } => { job }
+ *
+ * Patches job data.
+ *
+ * fields can be: { title, salary, equity }
+ *
+ * Returns { id, title, salary, equity, companyHandle }
+ *
+ * Authorization required: admin
+ */
+
+router.patch("/:id", ensureAdmin, async function (req, res, next) {
+  try {
+    const validator = jsonschema.validate(req.body, jobUpdateSchema);
+    if (!validator.valid) {
+      const errs = validator.errors.map(e => e.stack);
+      throw new BadRequestError(errs);
     }
-  });
+
+    const job = await Job.update(req.params.id, req.body);
+    return res.json({ job });
+  } catch (err) {
+    return next(err);
+  }
+});
   
-  /** PATCH /[id] { fld1, fld2, ... } => { job }
-   *
-   * Patches job data.
-   *
-   * fields can be: { title, salary, equity }
-   *
-   * Returns { id, title, salary, equity, companyHandle }
-   *
-   * Authorization required: admin
-   */
-  
-  router.patch("/:id", ensureAdmin, async function (req, res, next) {
-    try {
-      const validator = jsonschema.validate(req.body, jobUpdateSchema);
-      if (!validator.valid) {
-        const errs = validator.errors.map(e => e.stack);
-        throw new BadRequestError(errs);
-      }
-  
-      const job = await Job.update(req.params.id, req.body);
-      return res.json({ job });
-    } catch (err) {
-      return next(err);
-    }
-  });
-  
-  /** DELETE /[id]  =>  { deleted: id }
-   *
-   * Authorization: admin
-   */
-  
-  router.delete("/:id", ensureAdmin, async function (req, res, next) {
-    try {
-      await Job.remove(req.params.id);
-      return res.json({ deleted: req.params.id });
-    } catch (err) {
-      return next(err);
-    }
-  });
-  
+/** DELETE /[id]  =>  { deleted: id }
+ *
+ * Authorization: admin
+ */
+
+router.delete("/:id", ensureAdmin, async function (req, res, next) {
+  try {
+    await Job.remove(req.params.id);
+    return res.json({ deleted: req.params.id });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+/** POST /[id]/tech/[techId]  => { required: techId }
+ *
+ * Adds a technology requirement to a job
+ *
+ * Authorization: admin
+ **/
+ router.post("/:id/tech/:techId", ensureAdmin, async function (req, res, next) {
+  try {
+    const jobId = req.params.id;
+    const techId = req.params.techId;
+
+    await Job.require(jobId, techId);
+
+    return res.status(201).json({ required: techId });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+
+
 
 module.exports = router;

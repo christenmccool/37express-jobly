@@ -35,7 +35,7 @@ CREATE TABLE applications (
 
 CREATE TABLE technologies (
   id SERIAL PRIMARY KEY,
-  technology VARCHAR(25)
+  technology VARCHAR(50)
 );
 
 CREATE TABLE requirements (
