@@ -75,8 +75,9 @@ class Job {
 
   /** Given a job id, return data about job.
    *
-   * Returns { id, title, salary, equity, companyHandle }
-   *
+   * Returns { id, title, salary, equity, companyHandle, technologies }
+   *   where technologies is [techId, techId, ...]
+   * 
    * Throws NotFoundError if not found.
    **/
 
@@ -103,8 +104,8 @@ class Job {
               WHERE requirements.job_id=$1`,
       [id]);
 
-    // job.requirements = techRes.rows.map(ele => ele.id);
-    job.requirements = techRes.rows;
+    job.technology = techRes.rows.map(ele => ele.id);
+    // job.requirements = techRes.rows;
 
     return job;
   }

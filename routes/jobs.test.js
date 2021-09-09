@@ -249,9 +249,11 @@ describe("GET /jobs/:id", function () {
         salary: 1000,
         equity: "0.1",
         companyHandle: "c1",
-        requirements: [
-          {id: techIds[0], technology: "Tech1"}, 
-          {id: techIds[1], technology: "Tech2"}
+        technology: [
+          techIds[0],
+          techIds[1]
+          // {id: techIds[0], technology: "Tech1"}, 
+          // {id: techIds[1], technology: "Tech2"}
         ]
       },
     });
