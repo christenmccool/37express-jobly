@@ -209,7 +209,7 @@ describe("get", function () {
         salary: 1000,
         equity: '0.1',
         companyHandle: 'c1',
-        technology: [
+        technologies: [
           techIds[0], 
           techIds[1]
           // {id: techIds[0], technology: 'Tech1'}, 
@@ -303,16 +303,9 @@ describe("update", function () {
     }
   });
 
-  test("bad request with no job", async function () {
+  test("bad request with no data", async function () {
     try {
-      const results = await db.query(
-        `SELECT id
-          FROM jobs
-          WHERE title = 'Job 1'`
-      );
-      const job1Id = results.rows[0].id;
-
-      await Job.update(job1Id, {});
+      await Job.update(jobIds[0], {});
       fail();
     } catch (err) {
       expect(err instanceof BadRequestError).toBeTruthy();

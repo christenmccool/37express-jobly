@@ -8,7 +8,8 @@ const {
   commonBeforeAll,
   commonBeforeEach,
   commonAfterEach,
-  commonAfterAll
+  commonAfterAll,
+  techIds
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -65,7 +66,90 @@ describe("findAll", function () {
         technology: 'Tech2'
     }
     ]);
+
+  });
 });
 
+/************************************** get */
+
+describe("get", function() {
+  test("works", async function() {
+
+    let technology = await Technology.get(techIds[0]);
+
+    expect(technology).toEqual({
+      id: techIds[0],
+      technology: "Tech1"
+    });
+  })
+
+  test("not found if no such technology", async function() {
+
+    try {
+      await Technology.get(0);
+    }
+    catch(err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
 });
-  
+
+/************************************** update */
+
+describe("update", function() {
+  test("works", async function() {
+    let technology = await Technology.update(techIds[0], {technology: "NewTech1"});
+    expect(technology).toEqual(
+      {
+        id: techIds[0],
+        technology: "NewTech1"
+      }
+    )
+
+    const result = await db.query(
+      `SELECT id, technology
+         FROM technologies
+         WHERE technology = 'NewTech1'`
+    );
+
+    expect(result.rows).toContainEqual(
+      {
+        id: techIds[0],
+        technology: "NewTech1"
+      }
+    );
+  });
+
+  test("not found if no such technology", async function() {
+    try {
+      await Technology.update(0, {technology: "NewTech"});
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  })
+
+});
+
+/************************************** remove */
+
+describe("remove", function() {
+  test("works", async function() {
+    await Technology.remove(techIds[0]);
+
+    const res = await db.query(` 
+      SELECT id 
+        FROM technologies
+        WHERE id=${techIds[0]}`
+      )
+    expect(res.rows.length).toEqual(0);
+  })
+
+  test("not found if no such technology", async function() {
+    try {
+      await Technology.remove(0);
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  })
+
+});

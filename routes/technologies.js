@@ -16,7 +16,6 @@ const router = new express.Router();
 
 /** POST / { technology } =>  { technology }
  *
- *
  * Returns { id, technology }
  *
  * Authorization required: admin
@@ -38,23 +37,75 @@ router.post("/", ensureAdmin, async function (req, res, next) {
 });
 
 /** GET /  =>
- *   { jobs: [ { id, title, salary, equity, companyHandle }, ...] }
- *
- * Can filter on provided search filters:
- * - title (will find case-insensitive, partial matches
- * - minSalary
- * - hasEquity (filter to jobs that provide a non-zero amount of equity)
+ *   { technologies: [ { id, technology }, ...] }
  *
  * Authorization required: none
  */
 
 router.get("/", async function (req, res, next) {
   try {
-    const technologies = await Technology.findAll(req.query);
+    const technologies = await Technology.findAll();
     return res.json({ technologies });
   } catch (err) {
     return next(err);
   }
 });
+
+
+/** GET /[id]  =>  { technology }
+ *
+ * technology is { id, technology }
+ *
+ * Authorization required: none
+ */
+
+router.get("/:id", async function (req, res, next) {
+  try {
+    const technology = await Technology.get(req.params.id);
+    return res.json({ technology });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+
+/** PATCH /[id] { technology } => { technology }
+ *
+ * technology is { id, technology }
+ * 
+ * Returns { id, technology }
+ *
+ * Authorization required: admin
+ */
+
+ router.patch("/:id", ensureAdmin, async function (req, res, next) {
+
+  const validator = jsonschema.validate(req.body, technologyNewSchema);
+  if (!validator.valid) {
+    const errs = validator.errors.map(e => e.stack);
+    throw new BadRequestError(errs);
+  }
+  
+  try {
+    const technology = await Technology.update(req.params.id, req.body);
+    return res.json({ technology });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+/** DELETE /[id]  =>  { deleted: id }
+ *
+ * Authorization: admin
+ */
+
+router.delete("/:id", ensureAdmin, async function (req, res, next) {
+  try {
+    await Technology.remove(req.params.id);
+    return res.json({deleted: req.params.id});
+  } catch (err) {
+    return next(err);
+  }
+})
 
 module.exports = router;

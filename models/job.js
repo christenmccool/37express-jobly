@@ -104,7 +104,7 @@ class Job {
               WHERE requirements.job_id=$1`,
       [id]);
 
-    job.technology = techRes.rows.map(ele => ele.id);
+    job.technologies = techRes.rows.map(ele => ele.id);
     // job.requirements = techRes.rows;
 
     return job;

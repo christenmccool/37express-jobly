@@ -12,6 +12,7 @@ const {
   commonAfterAll,
   u1Token,
   u2Token,
+  techIds
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -64,6 +65,94 @@ describe("GET /technologies", function () {
         }
         ]
     });
-});
+  });
 });
   
+/************************************** GET /technologies/:id */
+
+describe("GET /technologies/:id", function () {
+  test("works for anon", async function() {
+    const resp = await request(app).get(`/technologies/${techIds[0]}`);
+    expect(resp.body).toEqual({technology: 
+      {
+        id: techIds[0],
+        technology: "Tech1"
+      }
+    });
+  });
+
+  test("not found for no such technology", async function () {
+    const resp = await request(app).get(`/technologies/0`);
+    expect(resp.statusCode).toEqual(404);
+  });
+});
+
+/************************************** PATCH /technologies/:id */
+describe("PATCH /technologies/:id", function () {
+  test("works for admin", async function () {
+    const resp = await request(app)
+      .patch(`/technologies/${techIds[0]}`)
+      .send({technology: "NewTech"})
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.body).toEqual({technology: 
+      {
+        id: techIds[0],
+        technology: "NewTech"
+      }
+    });
+  });
+
+  test("unauth when anon", async function () {
+    const resp = await request(app)
+      .patch(`/technologies/${techIds[0]}`)
+      .send({technology: "NewTech"});
+      expect(resp.statusCode).toEqual(401);
+  });
+
+  test("unauth when not admin", async function () {
+    const resp = await request(app)
+      .patch(`/technologies/${techIds[0]}`)
+      .send({technology: "NewTech"})
+      .set("authorization", `Bearer ${u2Token}`);
+      expect(resp.statusCode).toEqual(401);
+  });
+
+  test("not found for no such technology", async function () {
+    const resp = await request(app)
+      .patch(`/technologies/0`)
+      .send({technology: "NewTech"})
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(404);
+  });
+});
+
+/************************************** DELETE /technologies/:id */
+
+describe("DELETE /technologies/:id", function () {
+  test("works for admin", async function () {
+    const resp = await request(app)
+        .delete(`/technologies/${techIds[0]}`)
+        .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.body).toEqual({ deleted: `${techIds[0]}` });
+  });
+
+  test("unauth when anon", async function () {
+    const resp = await request(app)
+        .delete(`/technologies/${techIds[0]}`);
+    expect(resp.statusCode).toEqual(401);
+  });
+
+  test("unauth when not admin", async function () {
+    const resp = await request(app)
+        .delete(`/technologies/${techIds[0]}`)
+        .set("authorization", `Bearer ${u2Token}`);
+    expect(resp.statusCode).toEqual(401);
+  });
+
+  test("not found for no such technology", async function () {
+    const resp = await request(app)
+        .delete(`/technologies/0`)
+        .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(404);
+  });
+});

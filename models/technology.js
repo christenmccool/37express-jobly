@@ -54,6 +54,80 @@ static async create({ technology }) {
 
     return techRes.rows;
   }
+
+
+  /** Given a technology id, return data about technology.
+   *
+   * Returns { id, technology }
+   * 
+   * Throws NotFoundError if not found.
+   **/
+
+  static async get(id) {
+    const techRes = await db.query(
+      `SELECT id, technology
+        FROM technologies
+        WHERE id=$1`,
+      [id]
+    );
+
+    const technology = techRes.rows[0];
+
+    if (!technology) throw new NotFoundError(`No technology: ${id}`);
+
+    return technology;
+  }
+
+  /** Update technology data with `data`.
+   *
+   * Data should be: { technology }
+   *
+   * Returns { id, technology }
+   *
+   * Throws NotFoundError if not found.
+   */
+
+  static async update(id, data) {
+
+    if (Object.keys(data).length === 0) throw new BadRequestError("No data");
+
+    const techRes = await db.query(`
+      UPDATE technologies
+        SET technology=$1
+        WHERE id=$2
+        RETURNING id, technology
+      `,
+      [data.technology, id] 
+    )
+    const technology = techRes.rows[0];
+
+    if (!technology) throw new NotFoundError(`No technology: ${id}`);
+
+    return technology;
+  }
+
+  /** Delete given technology from database; returns undefined.
+  *
+  * Throws NotFoundError if company not found.
+  **/
+
+  static async remove(id) {
+
+    const techRes = await db.query(`
+      DELETE 
+        FROM technologies
+        WHERE id=$1
+        RETURNING id
+      `,
+      [id]
+    )
+
+    const technology = techRes.rows[0];
+
+    if (!technology) throw new NotFoundError(`No technology: ${id}`);
+
+  }
+
 }
 
 module.exports = Technology;
