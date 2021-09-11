@@ -3,6 +3,7 @@
 /** Routes for users. */
 
 const jsonschema = require("jsonschema");
+const generatePassword = require('password-generator');
 
 const express = require("express");
 const { ensureLoggedIn, ensureAdmin, ensureSelfOrAdmin } = require("../middleware/auth");
@@ -21,6 +22,9 @@ const router = express.Router();
  * only for admin users to add new users. The new user being added can be an
  * admin.
  *
+ * Uses a random password to create the token. 
+ * User will use this token to set password
+ * 
  * This returns the newly created user and an authentication token for them:
  *  {user: { username, firstName, lastName, email, isAdmin }, token }
  *
@@ -29,13 +33,21 @@ const router = express.Router();
 
 router.post("/", ensureAdmin, async function (req, res, next) {
   try {
-    const validator = jsonschema.validate(req.body, userNewSchema);
+    const userData = req.body;
+
+    const passwordMinLength = 8;
+    const passwordLength = Math.floor(Math.random() * 12) + passwordMinLength;
+    const randomPassword = generatePassword(passwordLength, false);
+
+    userData.password = randomPassword;
+
+    const validator = jsonschema.validate(userData, userNewSchema);
     if (!validator.valid) {
       const errs = validator.errors.map(e => e.stack);
       throw new BadRequestError(errs);
     }
 
-    const user = await User.register(req.body);
+    const user = await User.register({isAdmin: false, ...userData});
     const token = createToken(user);
     return res.status(201).json({ user, token });
   } catch (err) {
