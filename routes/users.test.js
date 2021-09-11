@@ -15,7 +15,9 @@ const {
   commonAfterAll,
   u1Token,
   u2Token,
-  jobIds
+  u3Token,
+  jobIds,
+  techIds
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -203,7 +205,8 @@ describe("GET /users/:username", function () {
         lastName: "U2L",
         email: "user2@user.com",
         isAdmin: false,
-        jobs: [jobIds[0], jobIds[1]]
+        jobs: [jobIds[0], jobIds[1]],
+        qualifications: [techIds[0]]
       },
     });
   });
@@ -223,7 +226,8 @@ describe("GET /users/:username", function () {
         lastName: "U2L",
         email: "user2@user.com",
         isAdmin: false,
-        jobs: [jobIds[0], jobIds[1]]
+        jobs: [jobIds[0], jobIds[1]],
+        qualifications: [techIds[0]]
       },
     });
   });
@@ -413,7 +417,7 @@ describe("POST /users/:username/jobs/:id", function () {
     expect(resp.statusCode).toEqual(401);
   });
 
-  test("unauth when no self or admin", async function () {
+  test("unauth when not self or admin", async function () {
     const resp = await request(app)
       .post(`/users/u3/jobs/${jobIds[0]}`)
       .set("authorization", `Bearer ${u2Token}`);
@@ -435,3 +439,103 @@ describe("POST /users/:username/jobs/:id", function () {
   });
 
 }); 
+
+/************************************** POST /users/:username/tech/:id */
+
+describe("POST /users/:username/tech/:id", function() {
+  test("works for admin", async function() {
+    const resp = await request(app)
+      .post(`/users/u2/tech/${techIds[1]}`)
+      .set("authorization", `Bearer ${u1Token}`);
+
+    expect(resp.statusCode).toEqual(201);
+    expect(resp.body).toEqual({ qualified: `${techIds[1]}` });
+  })
+
+  test("works for self", async function() {
+    const resp = await request(app)
+      .post(`/users/u2/tech/${techIds[1]}`)
+      .set("authorization", `Bearer ${u2Token}`);
+
+    expect(resp.statusCode).toEqual(201);
+    expect(resp.body).toEqual({ qualified: `${techIds[1]}` });
+  })
+
+  test("unauth when anon", async function() {
+    const resp = await request(app)
+      .post(`/users/u2/tech/${techIds[1]}`);
+
+      expect(resp.statusCode).toEqual(401);
+  })
+
+  test("unauth when not self or admin", async function() {
+    const resp = await request(app)
+      .post(`/users/u3/tech/${techIds[1]}`)
+      .set("authorization", `Bearer ${u2Token}`);
+
+    expect(resp.statusCode).toEqual(401);
+  })
+
+  test("not found if user missing", async function () {
+    const resp = await request(app)
+      .post(`/users/nope/tech/${techIds[1]}`)
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(404);
+  });
+
+  test("not found if tech missing", async function () {
+    const resp = await request(app)
+      .post(`/users/u2/tech/0`)
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toEqual(404);
+  });
+})
+
+/************************************** GET /users/:username/jobs */
+
+describe("GET /users/:username/jobs", function () {
+  test("works for admin with job match", async function () {
+    const resp = await request(app)
+      .get(`/users/u3/jobs/`)
+      .set("authorization", `Bearer ${u1Token}`);
+
+    expect(resp.body).toEqual({jobs:
+      [jobIds[0]]
+    })
+  });
+
+  test("works for admin with no job match", async function () {
+    const resp = await request(app)
+      .get(`/users/u2/jobs/`)
+      .set("authorization", `Bearer ${u1Token}`);
+
+    expect(resp.body).toEqual({jobs:[]})
+  });
+
+  test("works for self with job match", async function () {
+    const resp = await request(app)
+      .get(`/users/u3/jobs/`)
+      .set("authorization", `Bearer ${u3Token}`);
+
+    expect(resp.body).toEqual({jobs:
+      [jobIds[0]]
+    })
+  });
+
+  test("unauth when anon", async function() {
+    const resp = await request(app)
+      .get(`/users/u3/jobs/`)
+
+      expect(resp.statusCode).toEqual(401);
+  })
+
+  test("unauth when not self or admin", async function() {
+    const resp = await request(app)
+      .get(`/users/u3/jobs/`)
+      .set("authorization", `Bearer ${u2Token}`);
+
+    expect(resp.statusCode).toEqual(401);
+  })
+
+
+});

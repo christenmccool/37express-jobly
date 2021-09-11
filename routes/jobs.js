@@ -127,6 +127,7 @@ router.delete("/:id", ensureAdmin, async function (req, res, next) {
   }
 });
 
+
 /** POST /[id]/tech/[techId]  => { required: techId }
  *
  * Adds a technology requirement to a job
@@ -139,6 +140,7 @@ router.delete("/:id", ensureAdmin, async function (req, res, next) {
     const techId = req.params.techId;
 
     await Job.require(jobId, techId);
+    console.log(jobId, techId);
 
     return res.status(201).json({ required: techId });
   } catch (err) {

@@ -63,7 +63,10 @@ router.get("/", ensureAdmin, async function (req, res, next) {
 
 /** GET /[username] => { user }
  *
- * Returns { username, firstName, lastName, isAdmin }
+ * Returns { username, firstName, lastName, isAdmin, applications, qualifications }
+ * 
+ * applications is [jobId, jobId, ...]
+ * qualifications is [techId, techId, ...]
  *
  * Authorization required: user or admin
  **/
@@ -137,5 +140,40 @@ router.delete("/:username", ensureSelfOrAdmin, async function (req, res, next) {
     return next(err);
   }
 });
+
+/** POST /[username]/tech/[id]  => { qualified: techId }
+ *
+ * Allows a user to state a qualification in a technology (or admin to state the qualification for them)
+ *
+ * Authorization required: user or admin
+ **/
+router.post("/:username/tech/:id", ensureSelfOrAdmin, async function (req, res, next) {
+  try {
+    const username = req.params.username;
+    const techId = req.params.id;
+
+    await User.qualify(username, techId);
+
+    return res.status(201).json({qualified: techId});
+  } catch (err) {
+    return next(err);
+  }
+});
+
+/** GET /[username]/jobs  => { jobs }
+ *  jobs is [jobId, jobId, ..]
+ *  Matches users with jobs where the technologies are the same
+ *
+ *  Authorization required: user or admin
+ **/
+router.get("/:username/jobs", ensureSelfOrAdmin, async function (req, res, next) {
+  try {
+    const jobs = await User.getJobs(req.params.username);
+    return res.json({ jobs });
+  } catch (err) {
+    return next(err);
+  }
+});
+
 
 module.exports = router;

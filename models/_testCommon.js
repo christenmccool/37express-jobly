@@ -65,6 +65,11 @@ async function commonBeforeAll() {
         INSERT INTO requirements (job_id, tech_id)
         VALUES (${jobIds[0]}, ${techIds[0]}),
                (${jobIds[0]}, ${techIds[1]})`);
+
+  await db.query(`
+        INSERT INTO qualifications (username, tech_id)
+        VALUES ('u1', ${techIds[0]}),
+               ('u1', ${techIds[1]})`);
 }
 
 async function commonBeforeEach() {

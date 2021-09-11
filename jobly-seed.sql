@@ -371,3 +371,4 @@ VALUES ('Conservator, furniture', 110000, 0, 'watson-davis'),
 
 INSERT INTO technologies (technology)
         VALUES ('Python'), ('Javascript'), ('HTML'), ('CSS');
+

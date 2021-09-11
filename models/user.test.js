@@ -14,7 +14,8 @@ const {
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
-  jobIds
+  jobIds, 
+  techIds
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -144,7 +145,8 @@ describe("get", function () {
       lastName: "U1L",
       email: "u1@email.com",
       isAdmin: false,
-      jobs: [jobIds[1], jobIds[2]]
+      jobs: [jobIds[1], jobIds[2]],
+      qualifications: [techIds[0], techIds[1]]
     });
   });
 
@@ -247,14 +249,18 @@ describe("apply", function () {
       jobId: jobIds[0],
     });
 
-    const found = await db.query(`SELECT * FROM applications WHERE username = 'u1' AND job_id=${jobIds[0]}`);
+    const found = await db.query(
+      `SELECT * FROM applications 
+        WHERE username = 'u1' AND job_id=${jobIds[0]}`
+    );
+
     expect(found.rows.length).toEqual(1);
     expect(found.rows[0].username).toEqual("u1");
     expect(found.rows[0].job_id).toEqual(jobIds[0]);
   });
 
 
-  test("bad request with dup data", async function () {
+  test("bad request with dup", async function () {
     try {
       await User.apply("u1", jobIds[0]);
       await User.apply("u1", jobIds[0]);
@@ -282,4 +288,88 @@ describe("apply", function () {
     }
   });
 
+});
+
+
+/************************************** qualify */
+
+describe("qualify", function () {
+
+  test("works", async function () {
+
+    const qualification = await User.qualify('u2', techIds[0]);
+
+    expect(qualification).toEqual(
+      {
+        username: 'u2',
+        techId: techIds[0]
+      }
+    );
+
+    const found = await db.query(
+      `SELECT username, tech_id AS "techId"
+        FROM qualifications
+        WHERE username='u2' AND tech_id=${techIds[0]}`
+    );
+
+    expect(found.rows.length).toEqual(1);
+    expect(found.rows[0]).toEqual(
+      {
+        username: 'u2',
+        techId: techIds[0]
+      }
+    )
+  });
+
+  test("bad request with dup", async function () {
+    try {
+      await User.qualify('u2', techIds[0]);
+      await User.qualify('u2', techIds[0]);
+    } catch (err) {
+      expect(err instanceof BadRequestError).toBeTruthy();
+    }
+  });
+
+  test("not found with no such user", async function () {
+    try {
+      await User.qualify('nope', techIds[0]);
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+
+  test("not found with no such technology", async function () {
+    try {
+      await User.qualify('u2', 0);
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+
+});
+
+/************************************** getJobs */
+describe("getJobs", function () {
+
+  test("works", async function () {
+    const userJobs = await User.getJobs('u1');
+
+    expect(userJobs).toEqual([
+      jobIds[0]
+    ]);
+  });
+
+  test("works if no qualifications", async function () {
+    const userJobs = await User.getJobs('u2');
+
+    expect(userJobs).toEqual([]);
+  });
+
+  test("not found with no such user", async function () {
+    try {
+      await User.getJobs('nope');
+    } catch(err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  })
 });
